@@ -15,6 +15,13 @@ async function handleWs(sock) {
   try {
     for await (const ev of sock) {
       if (typeof ev === "string") {
+
+        /* This is where we implement the gun wire protocol */
+
+
+
+
+
         // text message
         console.log("ws:Text", ev);
         await sock.send(ev);
@@ -80,3 +87,38 @@ async function main2 () {
 
 main();
 main2();
+
+function State() {
+  var t;
+  t = +new Date;
+  if(last < t) {
+    return N = 0, last = t;
+  }
+}
+
+function HAM(machineState, incomingState, currentState, incomingValue, currentValue){
+	if(machineState < incomingState){
+		return {defer: true}; // the incoming value is outside the boundary of the machine's state, it must be reprocessed in another state.
+	}
+	if(incomingState < currentState){
+		return {historical: true}; // the incoming value is within the boundary of the machine's state, but not within the range.
+	}
+	if(currentState < incomingState){
+		return {converge: true, incoming: true}; // the incoming value is within both the boundary and the range of the machine's state.
+	}
+	if(incomingState === currentState){
+		incomingValue = JSON.stringify(incomingValue) || "";
+		currentValue = JSON.stringify(currentValue) || "";
+		if(incomingValue === currentValue){ // Note: while these are practically the same, the deltas could be technically different
+			return {state: true};
+		}
+
+		if(incomingValue < currentValue){
+			return {converge: true, current: true};
+		}
+		if(currentValue < incomingValue){
+			return {converge: true, incoming: true};
+		}
+	}
+	return {err: "Invalid CRDT Data: "+ incomingValue +" to "+ currentValue +" at "+ incomingState +" to "+ currentState +"!"};
+}
