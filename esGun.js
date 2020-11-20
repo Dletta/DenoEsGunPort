@@ -17,10 +17,31 @@ async function handleWs(sock) {
       if (typeof ev === "string") {
 
         /* This is where we implement the gun wire protocol */
+        var inObj = JSON.parse(ev);
 
+        if(Array.isArray(inObj)){
+          //deal with array
+          var arr = inObj;
+        } else {
+          var arr = [inObj];
+        }
+        var l = arr.length;
+        for(let i = 0; i<l; i++){
+          let item = arr[i];
+          if(item.dam){
+            console.log('got from');
+            console.log(item.dam, sock.id);
+            if(item.dam == 'bye'){ sock.close()};
+          }
+          if(item.get) {
+            //handle get request
+            broadcast(item, sock.id);
+          }
+          if(item.put) {
+            //handle put request
 
-
-
+          }
+        }
 
         // text message
         console.log("ws:Text", ev);
@@ -121,4 +142,17 @@ function HAM(machineState, incomingState, currentState, incomingValue, currentVa
 		}
 	}
 	return {err: "Invalid CRDT Data: "+ incomingValue +" to "+ currentValue +" at "+ incomingState +" to "+ currentState +"!"};
+}
+
+function broadcast (msg, sockId) {
+  console.log('called broadcast:', msg, sockId);
+  console.log(conns);
+  if(conns) {
+    var l = conns.length;
+    for(let item of conns) {
+      console.log('item', item);
+      
+    }
+
+  }
 }
